@@ -25,6 +25,12 @@ border:1px solid rgba(255,255,255,.28);padding:7px 15px;border-radius:999px;font
 h2{color:var(--navy);font-size:19px;font-weight:800;margin:34px 0 12px;letter-spacing:-.2px}
 h2::after{content:"";display:block;width:54px;height:4px;border-radius:3px;margin-top:8px;background:var(--grad)}
 .sub{color:var(--grey);margin:0 0 14px;font-size:14px}
+.resume{background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin:16px 0;
+box-shadow:0 1px 3px rgba(16,24,40,.04);border-left:5px solid var(--green)}
+.resume b{color:var(--navy);font-size:15px}
+.resume-row{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+.resume-row input{flex:1 1 280px;font-family:inherit;font-size:13.5px;padding:9px 11px;
+border:1px solid var(--border);border-radius:9px;background:var(--input)}
 .grid,.catalog{background:var(--card);border:1px solid var(--border);border-radius:14px;
 padding:18px 20px;box-shadow:0 1px 3px rgba(16,24,40,.04)}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 22px}
@@ -32,6 +38,7 @@ padding:18px 20px;box-shadow:0 1px 3px rgba(16,24,40,.04)}
 .fld{display:flex;flex-direction:column;gap:4px;margin-bottom:2px}
 .fld.wide{grid-column:1/3}
 label{font-size:12px;font-weight:700;color:var(--navy)}
+.req{color:#e02424;font-weight:800;margin-left:2px}
 input,select,textarea{font-family:inherit;font-size:13.5px;padding:9px 11px;border:1px solid var(--border);
 border-radius:9px;background:var(--input);color:var(--ink);transition:.15s}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green);
@@ -74,6 +81,7 @@ button.primary{background:linear-gradient(90deg,#00D15F,#01B0FE);color:#04231A;b
 button.primary:hover{filter:brightness(1.05)}
 button.ghost{background:#fff;color:var(--navy);border:2px solid var(--border)}
 button.ghost:hover{border-color:var(--navy)}
+button:disabled{opacity:.6;cursor:default}
 .note{font-size:12px;color:var(--grey);text-align:center;margin:12px 0}
 .msg{text-align:center;font-weight:700;padding:12px;border-radius:10px;margin:12px 0;display:none}
 .msg.ok{background:var(--tint);color:#04231A;display:block;border:1px solid var(--green)}
@@ -81,7 +89,7 @@ button.ghost:hover{border-color:var(--navy)}
 footer{color:var(--grey);font-size:11px;text-align:center;padding:26px;border-top:3px solid var(--green)}
 @media (max-width:720px){.grid,.catalog{grid-template-columns:1fr}.fld.wide{grid-column:1}
 .hero h1{font-size:26px}table.ftbl{display:block;overflow-x:auto;white-space:nowrap}}
-@media print{header.nav{position:static}.bar{display:none}.note{display:none}
+@media print{header.nav{position:static}.bar,.note,.resume{display:none}
 .hero{background:#002060 !important}
 select,input,textarea{border:1px solid #999;background:#fff}
 body{background:#fff}
@@ -94,12 +102,22 @@ body{background:#fff}
     <div class="eyebrow">Proof of Concept</div>
     <h1>Feature Validation &amp; Acceptance</h1>
     <p>Product-wise POC tracker for Veeam Data Platform v13.1 &amp; Veeam Data Cloud</p>
-    <span class="pill">Fillable form &nbsp;·&nbsp; Print to PDF &nbsp;·&nbsp; Submit online</span>
+    <span class="pill">Save &amp; resume by email &nbsp;·&nbsp; Print to PDF &nbsp;·&nbsp; Submit online</span>
   </div>
+
+  <div class="resume">
+    <b>Resume a saved draft</b>
+    <p class="sub" style="margin:6px 0 0">Continuing a POC you started earlier? Enter the <b>customer contact email</b> you used and load your saved draft.</p>
+    <div class="resume-row">
+      <input type="email" id="resumeEmail" placeholder="customer.contact@company.com">
+      <button class="ghost" type="button" onclick="loadDraft()">Load my draft</button>
+    </div>
+  </div>
+
   <div id="msg" class="msg"></div>
   <form id="pocform">
-    <h2>POC Engagement Details</h2><div class="grid"><div class="fld"><label>Customer / Account name</label><input type="text" name="Customer / Account name" data-k="Customer / Account name" placeholder=""></div><div class="fld"><label>Opportunity / POC name</label><input type="text" name="Opportunity / POC name" data-k="Opportunity / POC name" placeholder=""></div><div class="fld"><label>Customer industry</label><input type="text" name="Customer industry" data-k="Customer industry" placeholder=""></div><div class="fld"><label>POC reference no.</label><input type="text" name="POC reference no." data-k="POC reference no." placeholder=""></div><div class="fld"><label>Primary customer contact</label><input type="text" name="Primary customer contact" data-k="Primary customer contact" placeholder=""></div><div class="fld"><label>Customer technical contact</label><input type="text" name="Customer technical contact" data-k="Customer technical contact" placeholder=""></div><div class="fld"><label>Contact email</label><input type="text" name="Contact email" data-k="Contact email" placeholder=""></div><div class="fld"><label>Contact phone</label><input type="text" name="Contact phone" data-k="Contact phone" placeholder=""></div><div class="fld"><label>POC start date</label><input type="date" name="POC start date" data-k="POC start date"></div><div class="fld"><label>POC target end date</label><input type="date" name="POC target end date" data-k="POC target end date"></div><div class="fld"><label>POC duration</label><input type="text" name="POC duration" data-k="POC duration" placeholder=""></div><div class="fld"><label>Product version(s)</label><input type="text" name="Product version(s)" data-k="Product version(s)" placeholder=""></div></div>
-    <h2>Conducted By</h2><div class="grid"><div class="fld"><label>POC conducted by (role)</label><select name="POC conducted by (role)" data-k="POC conducted by (role)"><option value="">—</option><option>Partner SE</option><option>Distributor SE</option><option>Veeam SE</option></select></div><div class="fld"><label>Company / Organization</label><input type="text" name="Company / Organization" data-k="Company / Organization" placeholder=""></div><div class="fld"><label>Name of person conducting POC</label><input type="text" name="Name of person conducting POC" data-k="Name of person conducting POC" placeholder=""></div><div class="fld"><label>Email</label><input type="text" name="Email" data-k="Email" placeholder=""></div></div>
+    <h2>POC Engagement Details</h2><div class="grid"><div class="fld"><label>Customer / Account name <span class="req">*</span></label><input type="text" name="Customer / Account name" data-k="Customer / Account name" placeholder="" required></div><div class="fld"><label>Opportunity / POC name</label><input type="text" name="Opportunity / POC name" data-k="Opportunity / POC name" placeholder=""></div><div class="fld"><label>Customer industry</label><input type="text" name="Customer industry" data-k="Customer industry" placeholder=""></div><div class="fld"><label>POC reference no.</label><input type="text" name="POC reference no." data-k="POC reference no." placeholder=""></div><div class="fld"><label>Primary customer contact <span class="req">*</span></label><input type="text" name="Primary customer contact" data-k="Primary customer contact" placeholder="" required></div><div class="fld"><label>Customer technical contact <span class="req">*</span></label><input type="text" name="Customer technical contact" data-k="Customer technical contact" placeholder="" required></div><div class="fld"><label>Contact email <span class="req">*</span></label><input type="email" name="Contact email" data-k="Contact email" placeholder="used to save &amp; resume your draft" required></div><div class="fld"><label>Contact phone</label><input type="text" name="Contact phone" data-k="Contact phone" placeholder=""></div><div class="fld"><label>POC start date</label><input type="date" name="POC start date" data-k="POC start date"></div><div class="fld"><label>POC target end date</label><input type="date" name="POC target end date" data-k="POC target end date"></div><div class="fld"><label>POC duration</label><input type="text" name="POC duration" data-k="POC duration" placeholder=""></div><div class="fld"><label>Product version(s)</label><input type="text" name="Product version(s)" data-k="Product version(s)" placeholder=""></div></div>
+    <h2>Conducted By</h2><div class="grid"><div class="fld"><label>POC conducted by (role) <span class="req">*</span></label><select name="POC conducted by (role)" data-k="POC conducted by (role)" required><option value="">—</option><option>Partner SE</option><option>Distributor SE</option><option>Veeam SE</option></select></div><div class="fld"><label>Company / Organization <span class="req">*</span></label><input type="text" name="Company / Organization" data-k="Company / Organization" placeholder="" required></div><div class="fld"><label>Name of person conducting POC <span class="req">*</span></label><input type="text" name="Name of person conducting POC" data-k="Name of person conducting POC" placeholder="" required></div><div class="fld"><label>Email <span class="req">*</span></label><input type="email" name="Email" data-k="Email" placeholder="" required></div></div>
 
     <h2>Products in Scope</h2>
     <p class="sub">Select one or more products for this POC (multi-select). Only the selected products' features are shown below.</p>
@@ -218,22 +236,28 @@ body{background:#fff}
     <h2>Signature — Customer (Authorised Person)</h2><div class="grid"><div class="fld"><label>Customer — Name</label><input type="text" name="Customer — Name" data-k="Customer — Name" placeholder=""></div><div class="fld"><label>Customer — Title / Designation</label><input type="text" name="Customer — Title / Designation" data-k="Customer — Title / Designation" placeholder=""></div><div class="fld"><label>Customer — Company</label><input type="text" name="Customer — Company" data-k="Customer — Company" placeholder=""></div><div class="fld"><label>Customer — Email</label><input type="text" name="Customer — Email" data-k="Customer — Email" placeholder=""></div><div class="fld"><label>Customer — Date</label><input type="date" name="Customer — Date" data-k="Customer — Date"></div></div>
     <h2>Signature — POC Conducted By (Partner / Distributor / Veeam SE)</h2>
     <div class="grid"><div class="fld"><label>Conducted by — Name</label><input type="text" name="Conducted by — Name" data-k="Conducted by — Name" placeholder=""></div><div class="fld"><label>Conducted by — Role</label><select name="Conducted by — Role" data-k="Conducted by — Role"><option value="">—</option><option>Partner SE</option><option>Distributor SE</option><option>Veeam SE</option></select></div><div class="fld"><label>Conducted by — Title / Designation</label><input type="text" name="Conducted by — Title / Designation" data-k="Conducted by — Title / Designation" placeholder=""></div><div class="fld"><label>Conducted by — Company</label><input type="text" name="Conducted by — Company" data-k="Conducted by — Company" placeholder=""></div><div class="fld"><label>Conducted by — Email</label><input type="text" name="Conducted by — Email" data-k="Conducted by — Email" placeholder=""></div><div class="fld"><label>Conducted by — Date</label><input type="date" name="Conducted by — Date" data-k="Conducted by — Date"></div></div>
-    <p class="note">Progress is auto-saved in your browser. Use “Save / Print as PDF” for a copy, or “Submit” to send your responses.</p>
+
+    <h2>Submission</h2>
+    <p class="sub">A POC runs over several visits. Use <b>Save draft</b> to store your progress (keyed to the customer contact email) and continue later from any device. Use <b>Submit (final)</b> only when the POC is complete.</p>
+    <p class="note">Tip: entries also auto-save in this browser, so on the same device you can simply reopen this link to continue.</p>
   </form>
 </div>
 <div class="bar">
-  <button class="primary" type="button" onclick="submitForm()">Submit responses</button>
+  <button class="primary" type="button" onclick="submitFinal(this)">Submit (final)</button>
+  <button class="ghost" type="button" onclick="saveDraft(this)">Save draft</button>
   <button class="ghost" type="button" onclick="window.print()">Save / Print as PDF</button>
   <button class="ghost" type="button" onclick="clearForm()">Clear form</button>
 </div>
 <footer>Veeam Proof of Concept &nbsp;|&nbsp; Veeam Data Platform v13.1 &amp; Veeam Data Cloud &nbsp;|&nbsp; Confidential</footer>
 <script>
-// ====== CONFIG: paste your Google Apps Script Web App URL below (see README) ======
-const ENDPOINT = "https://script.google.com/macros/s/AKfycby0OjrEVaqkEQDOASbH2QwuAO25zjVZ8cknt-WbHE7-R6AlLkFHpoWJH2gYnEAYGq16VQ/exec";
-// ===================================================================================
-const KEY = "veeam_poc_form_v2";
+// ====== Google Apps Script Web App URL (see README) ======
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbwKYHLLQfJn1-QVYSUZFc_gxRC9hxARkohOgC7CNz7KCx9Sg8qko4czd4QpKsTdx_A8tA/exec";
+// =========================================================
+const KEY = "veeam_poc_form_v3";
+const EMAIL_KEY = "Contact email";
 const form = document.getElementById('pocform');
 const msg = document.getElementById('msg');
+
 function collect(){
   const o = {};
   form.querySelectorAll('[data-k]').forEach(el => {
@@ -242,16 +266,23 @@ function collect(){
   o["_submitted_at"] = new Date().toISOString();
   return o;
 }
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify(collect())); }catch(e){} }
-function restore(){
-  try{ const d = JSON.parse(localStorage.getItem(KEY)||"{}");
-    form.querySelectorAll('[data-k]').forEach(el => {
-      if(d[el.dataset.k]===undefined) return;
-      if(el.type==='checkbox') el.checked = (d[el.dataset.k]==='Yes');
-      else el.value = d[el.dataset.k];
-    });
-  }catch(e){}
+function collectCompact(){
+  const o = {};
+  form.querySelectorAll('[data-k]').forEach(el => {
+    const v = (el.type === 'checkbox') ? (el.checked ? 'Yes' : 'No') : el.value;
+    if(v !== '' && v != null) o[el.dataset.k] = v;
+  });
+  return o;
 }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(collect())); }catch(e){} }
+function populate(d){
+  form.querySelectorAll('[data-k]').forEach(el => {
+    if(d[el.dataset.k] === undefined) return;
+    if(el.type === 'checkbox') el.checked = (d[el.dataset.k] === 'Yes');
+    else el.value = d[el.dataset.k];
+  });
+}
+function restore(){ try{ populate(JSON.parse(localStorage.getItem(KEY) || "{}")); }catch(e){} }
 function applyScope(){
   const checked = new Set();
   document.querySelectorAll('.catchk:checked').forEach(cb => checked.add(cb.value));
@@ -263,26 +294,67 @@ function applyScope(){
 form.addEventListener('input', save);
 form.addEventListener('change', e => { if(e.target.classList.contains('catchk')) applyScope(); save(); });
 function show(t, ok){ msg.textContent=t; msg.className="msg "+(ok?"ok":"err"); window.scrollTo({top:0,behavior:'smooth'}); }
-function clearForm(){ if(confirm("Clear all entries?")){ localStorage.removeItem(KEY); form.reset(); applyScope(); } }
-async function submitForm(){
-  const data = collect();
-  if(!ENDPOINT){
-    show("Submission is not configured yet. Add your Google Apps Script URL as ENDPOINT in index.html (see README).", false);
-    return; }
-  const btn = document.querySelector('.bar .primary'); const label = btn.textContent;
-  btn.disabled = true; btn.textContent = "Submitting…";
-  try{
-    // Google Apps Script needs a 'simple' request (text/plain, no-cors) — the write still succeeds.
-    await fetch(ENDPOINT, { method:"POST", mode:"no-cors",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body: JSON.stringify(data) });
-    show("Thank you — your POC responses were submitted.", true);
-    localStorage.removeItem(KEY);
-    form.reset(); applyScope();
-  }catch(e){
-    show("Could not reach the submission server. Please check your connection and try again.", false);
-  } finally { btn.disabled = false; btn.textContent = label; }
+function emailEl(){ return form.querySelector('[data-k="'+EMAIL_KEY+'"]'); }
+function clearForm(){ if(confirm("Clear all entries on this page?")){ localStorage.removeItem(KEY); form.reset(); applyScope(); } }
+
+async function postData(payload){
+  await fetch(ENDPOINT, { method:"POST", mode:"no-cors",
+    headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(payload) });
 }
+
+async function saveDraft(btn){
+  const em = emailEl();
+  if(!em.value || !em.checkValidity()){
+    show("Please enter a valid Contact email first — it is the key used to save and reload your draft.", false);
+    em.focus(); return;
+  }
+  const data = collectCompact();
+  data["_action"] = "draft"; data["Submission status"] = "Draft / in progress";
+  const label = btn.textContent; btn.disabled = true; btn.textContent = "Saving…";
+  try{
+    await postData(data); save();
+    show("Draft saved for " + em.value + ". To continue later — on any device — reopen this link, enter this email under ‘Resume a saved draft’, and click ‘Load my draft’.", true);
+  }catch(e){ show("Could not reach the server to save your draft. Please check your connection and try again.", false); }
+  finally{ btn.disabled = false; btn.textContent = label; }
+}
+
+async function submitFinal(btn){
+  if(!form.reportValidity()){ show("Please complete the required fields marked with *.", false); return; }
+  const data = collect();
+  data["_action"] = "final"; data["Submission status"] = "Final submission";
+  const label = btn.textContent; btn.disabled = true; btn.textContent = "Submitting…";
+  try{
+    await postData(data);
+    show("Thank you — your FINAL POC submission was received. Your saved draft has been cleared.", true);
+    localStorage.removeItem(KEY); form.reset(); applyScope();
+  }catch(e){ show("Could not reach the server. Please check your connection and try again.", false); }
+  finally{ btn.disabled = false; btn.textContent = label; }
+}
+
+function loadDraft(){
+  const email = (document.getElementById('resumeEmail').value || '').trim();
+  if(!email){ show("Enter the customer contact email to load a saved draft.", false); return; }
+  show("Loading your saved draft…", true);
+  let s;
+  let done = false;
+  window.__onDraft = function(resp){
+    done = true;
+    if(resp && resp.ok && resp.data){
+      populate(resp.data); applyScope(); save();
+      show("Draft loaded for " + email + ". Continue filling, then ‘Save draft’ again or ‘Submit (final)’ when complete.", true);
+    } else {
+      show("No saved draft was found for " + email + ". Please check the email address.", false);
+    }
+    if(s && s.parentNode) s.parentNode.removeChild(s);
+  };
+  s = document.createElement('script');
+  s.src = ENDPOINT + "?action=load&email=" + encodeURIComponent(email) + "&callback=__onDraft&t=" + Date.now();
+  s.onerror = function(){ show("Could not reach the server to load the draft. Please try again.", false); if(s.parentNode) s.parentNode.removeChild(s); };
+  document.body.appendChild(s);
+  setTimeout(function(){ if(!done) show("The server did not respond. Please try ‘Load my draft’ again.", false); }, 12000);
+}
+
 restore(); applyScope();
+const _pref = emailEl(); if(_pref && _pref.value) document.getElementById('resumeEmail').value = _pref.value;
 </script>
 </body></html>
