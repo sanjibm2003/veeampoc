@@ -123,8 +123,8 @@ body{background:#fff}
 
   <div id="msg" class="msg"></div>
   <form id="pocform">
-    <h2>POC Engagement Details</h2><div class="grid"><div class="fld"><label>Customer / Account name <span class="req">*</span></label><input type="text" name="Customer / Account name" data-k="Customer / Account name" placeholder="" required></div><div class="fld"><label>Customer Email <span class="req">*</span></label><input type="email" name="Customer Email" data-k="Customer Email" placeholder="used to save &amp; resume your draft" required></div><div class="fld"><label>Veeam AM Name <span class="req">*</span></label><input type="text" name="Veeam AM Name" data-k="Veeam AM Name" placeholder="" required></div><div class="fld"><label>Veeam SE Name</label><input type="text" name="Veeam SE Name" data-k="Veeam SE Name" placeholder=""></div><div class="fld"><label>Primary customer contact <span class="req">*</span></label><input type="text" name="Primary customer contact" data-k="Primary customer contact" placeholder="" required></div><div class="fld"><label>Partner Name <span class="req">*</span></label><input type="text" name="Partner Name" data-k="Partner Name" placeholder="" required></div><div class="fld"><label>Partner Email <span class="req">*</span></label><input type="email" name="Partner Email" data-k="Partner Email" placeholder="" required></div><div class="fld"><label>Partner Contact</label><input type="text" name="Partner Contact" data-k="Partner Contact" placeholder=""></div><div class="fld"><label>POC start date</label><input type="date" name="POC start date" data-k="POC start date"></div><div class="fld"><label>POC target end date</label><input type="date" name="POC target end date" data-k="POC target end date"></div><div class="fld"><label>POC duration</label><input type="text" inputmode="numeric" id="pocDuration" name="POC duration" data-k="POC duration" placeholder="e.g. 10 (days added automatically)"></div><div class="fld"><label>Product version(s)</label><select name="Product version(s)" data-k="Product version(s)"><option value="">—</option><option>VDP v13.0.2</option><option>VDP v13.1</option><option>VDC</option></select></div></div>
-    <h2>Conducted By</h2><div class="grid"><div class="fld"><label>POC conducted by (role) <span class="req">*</span></label><select name="POC conducted by (role)" data-k="POC conducted by (role)" required><option value="">—</option><option>Distributor SE</option><option>Veeam SE</option></select></div><div class="fld"><label>Company / Organization <span class="req">*</span></label><select name="Company / Organization" data-k="Company / Organization" required><option value="">—</option><option>Redington Limited</option><option>Savex Technologies Pvt Ltd</option><option>Veeam Software</option></select></div><div class="fld"><label>Name of person conducting POC <span class="req">*</span></label><input type="text" name="Name of person conducting POC" data-k="Name of person conducting POC" placeholder="" required></div><div class="fld"><label>Email <span class="req">*</span></label><input type="email" name="Email" data-k="Email" placeholder="" required></div></div>
+    <h2>POC Engagement Details</h2><div class="grid"><div class="fld"><label>Customer / Account name <span class="req">*</span></label><input type="text" name="Customer / Account name" data-k="Customer / Account name" placeholder="" required></div><div class="fld"><label>Customer Email <span class="req">*</span></label><input type="email" name="Customer Email" data-k="Customer Email" placeholder="used to save &amp; resume your draft" required></div><div class="fld"><label>Veeam AM Name</label><input type="text" name="Veeam AM Name" data-k="Veeam AM Name" placeholder=""></div><div class="fld"><label>Veeam SE Name</label><input type="text" name="Veeam SE Name" data-k="Veeam SE Name" placeholder=""></div><div class="fld"><label>Primary customer contact <span class="req">*</span></label><input type="text" name="Primary customer contact" data-k="Primary customer contact" placeholder="" required></div><div class="fld"><label>Partner Name <span class="req">*</span></label><input type="text" name="Partner Name" data-k="Partner Name" placeholder="" required></div><div class="fld"><label>Partner Email <span class="req">*</span></label><input type="email" name="Partner Email" data-k="Partner Email" placeholder="" required></div><div class="fld"><label>Partner Contact</label><input type="text" name="Partner Contact" data-k="Partner Contact" placeholder=""></div><div class="fld"><label>POC start date</label><input type="date" name="POC start date" data-k="POC start date"></div><div class="fld"><label>POC target end date</label><input type="date" name="POC target end date" data-k="POC target end date"></div><div class="fld"><label>POC duration</label><input type="text" inputmode="numeric" id="pocDuration" name="POC duration" data-k="POC duration" placeholder="e.g. 10 (days added automatically)"></div><div class="fld"><label>Product version(s)</label><select name="Product version(s)" data-k="Product version(s)"><option value="">—</option><option>VDP v13.0.2</option><option>VDP v13.1</option><option>VDC</option></select></div></div>
+    <h2>Conducted By</h2><div class="grid"><div class="fld"><label>POC conducted by (role) <span class="req">*</span></label><select name="POC conducted by (role)" data-k="POC conducted by (role)" required><option value="">—</option><option>Distributor SE</option><option>Veeam SE</option><option>Partner SE</option></select></div><div class="fld"><label>Company / Organization <span class="req">*</span></label><select id="companyOrg" name="Company / Organization" data-k="Company / Organization" required><option value="">—</option><option>Redington Limited</option><option>Savex Technologies Pvt Ltd</option><option>Veeam Software</option><option>Partner Organisation</option></select></div><div class="fld" id="partnerOrgWrap" style="display:none"><label>Partner Organisation Name <span class="req">*</span></label><input type="text" id="partnerOrgName" name="Partner Organisation Name" data-k="Partner Organisation Name" placeholder="Enter partner organisation name"></div><div class="fld"><label>Distributor Sales person name</label><input type="text" name="Distributor Sales person name" data-k="Distributor Sales person name" placeholder=""></div><div class="fld"><label>Name of person conducting POC <span class="req">*</span></label><input type="text" name="Name of person conducting POC" data-k="Name of person conducting POC" placeholder="" required></div><div class="fld"><label>Email <span class="req">*</span></label><input type="email" name="Email" data-k="Email" placeholder="" required></div></div>
 
     <h2>Products in Scope</h2>
     <p class="sub">Select one or more products for this POC (multi-select). Only the selected products' features are shown below.</p>
@@ -331,8 +331,22 @@ function applyScope(){
   }
   document.getElementById('noprod').style.display = checked.size ? 'none' : 'block';
 }
+function applyCompany(){
+  const c=document.getElementById('companyOrg');
+  const wrap=document.getElementById('partnerOrgWrap');
+  const inp=document.getElementById('partnerOrgName');
+  if(!c||!wrap||!inp) return;
+  const show=(c.value==='Partner Organisation');
+  wrap.style.display=show?'':'none';
+  inp.required=show;
+  if(!show) inp.value='';
+}
 form.addEventListener('input', save);
-form.addEventListener('change', e => { if(e.target.classList.contains('catchk')) applyScope(); save(); });
+form.addEventListener('change', e => {
+  if(e.target.classList.contains('catchk')) applyScope();
+  if(e.target.id==='companyOrg') applyCompany();
+  save();
+});
 function show(t, ok){ msg.textContent=t; msg.className="msg "+(ok?"ok":"err"); window.scrollTo({top:0,behavior:'smooth'}); }
 function emailEl(){ return form.querySelector('[data-k="'+EMAIL_KEY+'"]'); }
 function clearForm(){ if(confirm("Clear all entries on this page?")){ localStorage.removeItem(KEY); form.reset(); applyScope(); } }
@@ -407,7 +421,7 @@ if(_dur){ _dur.addEventListener('blur', function(){
   if(/^\d+(\.\d+)?$/.test(v)) { _dur.value = v + " days"; save(); }
 }); }
 
-restore(); applyScope();
+restore(); applyScope(); applyCompany();
 const _pref = emailEl(); if(_pref && _pref.value) document.getElementById('resumeEmail').value = _pref.value;
 </script>
 </body></html>
