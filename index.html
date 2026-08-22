@@ -68,7 +68,7 @@ const SB = (window.SUPABASE_URL && window.SUPABASE_ANON_KEY && window.supabase)
 const app=document.getElementById("app");
 let me=null, charts=[];
 function esc(s){return String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
-function pill(s){const m={active:"p-active",pending:"p-pending",blocked:"p-blocked",Final:"p-final",Draft:"p-draft","Completed":"p-final","On-going":"p-draft",POC:"p-poc",Demo:"p-demo"};return '<span class="pill '+(m[s]||'')+'">'+esc(s)+'</span>';}
+function pill(s){const m={active:"p-active",pending:"p-pending",blocked:"p-blocked",Final:"p-final",Draft:"p-draft","Completed":"p-final","On-going":"p-draft",POC:"p-poc",Demo:"p-demo",super_admin:"p-poc",admin:"p-demo",user:"p-pending"};return '<span class="pill '+(m[s]||'')+'">'+esc(s)+'</span>';}
 function gv(id){const e=document.getElementById(id);return e?e.value:"";}
 function val(id){return (document.getElementById(id).value||"").trim();}
 function msg(id,t,ok){const m=document.getElementById(id);if(m){m.textContent=t;m.className="msg "+(ok?"ok":"err");}}
@@ -90,7 +90,7 @@ async function afterLogin(){
   setWho();
   if(me.status==='pending'){ document.getElementById("adminTabs").classList.add("hide"); screen("Awaiting approval","Your account is registered and awaiting administrator approval. You'll be able to sign in once approved."); return; }
   if(me.status==='blocked'){ await SB.auth.signOut(); me=null; setWho(); screen("Account blocked","This account has been blocked. Please contact the administrator."); return; }
-  if(me.role==='admin'){ renderAdmin(); } else { renderUserMenu(); }
+  if(me.role==='admin'||me.role==='super_admin'){ renderAdmin(); } else { renderUserMenu(); }
 }
 async function doLogout(){ await SB.auth.signOut(); me=null; setWho(); document.getElementById("adminTabs").classList.add("hide"); renderAuth(); }
 function screen(title,text){app.innerHTML=`<div class="wrap"><div class="card loginbox"><h1>${esc(title)}</h1><p class="sub">${esc(text)}</p><button class="ghost" onclick="doLogout()">Back to login</button></div></div>`;}
@@ -114,7 +114,7 @@ function renderSignup(){clearCharts();app.innerHTML=`<div class="wrap"><div clas
   <label>SE Name <span class="req">*</span></label><input id="sn">
   <label>SE Email <span class="req">*</span></label><input id="se" type="email">
   <label>SE Contact <span class="req">*</span></label><input id="sp">
-  <label>Relation with Veeam <span class="req">*</span></label><select id="sr"><option value="">—</option><option>Distributor</option><option>Partner</option></select>
+  <label>Relation with Veeam <span class="req">*</span></label><select id="sr"><option value="">—</option><option>Distributor</option><option>Partner</option><option>Veeam Employee</option></select>
   <label>Password <span class="req">*</span></label><input id="spw" type="password">
   <button class="primary" style="width:100%;margin-top:14px" onclick="doSignup()">Sign up</button>
   <p class="sub" style="margin-top:12px"><button class="linkbtn" onclick="renderAuth()">&#8592; Back to login</button></p></div></div>`;}
@@ -201,12 +201,21 @@ function guideView(prod){const gs=window._guide||[];document.getElementById("gt"
   rows.forEach(r=>h+='<tr><td><b>'+esc(r[0])+'</b></td><td>'+esc(r[1])+'</td></tr>');if(!rows.length)h+='<tr><td colspan=2>No content yet.</td></tr>';document.getElementById("gc").innerHTML=h+'</tbody></table>';}
 
 /* ---------- ADMIN portal ---------- */
-let adminTab="approvals",adminOrg=null,dashF={relation:"",type:"",product:"",org:""},allActs=[];
+let adminTab="dashboard",adminOrg=null,dashF={relation:"",type:"",product:"",org:""},allActs=[];
+function isSuper(){return me&&me.role==='super_admin';}
+function inScope(orgName){ if(isSuper())return true; if(me&&me.scope_all)return true; return me&&Array.isArray(me.scope_orgs)&&me.scope_orgs.indexOf(orgName)>=0; }
 function renderAdmin(){clearCharts();const t=document.getElementById("adminTabs");t.classList.remove("hide");
-  const def=[["approvals","Approvals"],["distributors","Distributors"],["partners","Partners"],["dashboard","Activity Dashboard"],["guide","Guide"]];
+  let def;
+  if(isSuper()){ def=[["approvals","Approvals"],["distributors","Distributors"],["partners","Partners"],["dashboard","Activity Dashboard"],["team","Team & Roles"],["guide","Guide"]]; }
+  else { def=[["dashboard","Activity Dashboard"],["distributors","Distributors"],["partners","Partners"],["guide","Guide"]]; }
+  if(!def.find(d=>d[0]===adminTab)) adminTab=def[0][0];
   t.innerHTML=def.map(([k,l])=>`<button class="${adminTab===k?'active':''}" onclick="adminGo('${k}')">${l}</button>`).join("");
-  if(adminTab==="approvals")adminApprovals();else if(adminTab==="distributors")adminOrgs("Distributor");
-  else if(adminTab==="partners")adminOrgs("Partner");else if(adminTab==="dashboard")adminDashboard();else adminGuide();}
+  if(adminTab==="approvals")adminApprovals();
+  else if(adminTab==="distributors")adminOrgs("Distributor");
+  else if(adminTab==="partners")adminOrgs("Partner");
+  else if(adminTab==="dashboard")adminDashboard();
+  else if(adminTab==="team")adminTeam();
+  else adminGuide();}
 function adminGo(k){adminTab=k;adminOrg=null;renderAdmin();}
 async function adminApprovals(){app.innerHTML='<div class="wrap"><h1>Registrations</h1><p class="note">Loading…</p></div>';
   const {data}=await SB.from('profiles').select('*').eq('status','pending').order('created_at');
@@ -224,19 +233,23 @@ async function adminOrgs(rel){if(adminOrg)return adminCompanyUsers(adminOrg);
     SB.from('organizations').select('*').eq('relation',rel).order('name'),
     SB.from('poc_submissions').select('org_name'),SB.from('demo_activities').select('org_name'),SB.from('profiles').select('org_name,status')]);
   const cnt=(arr,n)=>(arr||[]).filter(x=>x.org_name===n).length;
-  let h='<div class="wrap"><h1>'+rel+'s</h1><p class="sub">Click a company to manage its users.</p><div class="card"><table><thead><tr><th>Company</th><th>Users</th><th>Active</th><th>POCs</th><th>Demos</th><th></th></tr></thead><tbody>';
-  (orgs||[]).forEach(o=>{const us=(profs||[]).filter(p=>p.org_name===o.name);const act=us.filter(p=>p.status==='active').length;
-    h+='<tr><td><b>'+esc(o.name)+'</b></td><td>'+us.length+'</td><td>'+act+'</td><td>'+cnt(pocs,o.name)+'</td><td>'+cnt(demos,o.name)+'</td><td><button class="ghost small" onclick="openOrg(\''+esc(o.name)+'\')">Manage &#8594;</button></td></tr>';});
-  if(!orgs||!orgs.length)h+='<tr><td colspan=6>No '+rel.toLowerCase()+' organizations yet.</td></tr>';
+  const list=(orgs||[]).filter(o=>inScope(o.name));
+  const verb=isSuper()?"manage":"view";
+  let h='<div class="wrap"><h1>'+rel+'s</h1><p class="sub">Click a company to '+verb+' its users'+(isSuper()?"":" (view-only — your access is scoped)")+'.</p><div class="card"><table><thead><tr><th>Company</th><th>Users</th><th>Active</th><th>POCs</th><th>Demos</th><th></th></tr></thead><tbody>';
+  list.forEach(o=>{const us=(profs||[]).filter(p=>p.org_name===o.name);const act=us.filter(p=>p.status==='active').length;
+    h+='<tr><td><b>'+esc(o.name)+'</b></td><td>'+us.length+'</td><td>'+act+'</td><td>'+cnt(pocs,o.name)+'</td><td>'+cnt(demos,o.name)+'</td><td><button class="ghost small" onclick="openOrg(\''+esc(o.name)+'\')">'+(isSuper()?"Manage":"View")+' &#8594;</button></td></tr>';});
+  if(!list.length)h+='<tr><td colspan=6>No '+rel.toLowerCase()+' organizations in your access.</td></tr>';
   app.innerHTML=h+'</tbody></table></div></div>';}
 function openOrg(n){adminOrg=n;renderAdmin();}
 async function adminCompanyUsers(name){app.innerHTML='<div class="wrap"><p class="note">Loading…</p></div>';
   const {data:us}=await SB.from('profiles').select('*').eq('org_name',name).order('full_name');
-  let h='<div class="wrap"><div class="crumb"><button class="linkbtn" onclick="backOrgs()">&#8592; Back to list</button></div><h1>'+esc(name)+'</h1><p class="sub">Manage user accounts.</p><div class="card"><table><thead><tr><th>SE Name</th><th>Email</th><th>Contact</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
-  (us||[]).forEach(u=>h+='<tr><td>'+esc(u.full_name)+'</td><td>'+esc(u.email)+'</td><td>'+esc(u.contact)+'</td><td>'+pill(u.status)+'</td><td>'+
-    (u.status==='blocked'?'<button class="ghost small" onclick="setStatus(\''+u.id+'\',\'active\')">Unblock</button>':'<button class="ghost small" onclick="setStatus(\''+u.id+'\',\'blocked\')">Block</button>')+
-    ' <button class="ghost small" onclick="resetPw(\''+esc(u.email)+'\')">Send reset</button> <button class="danger small" onclick="delUser(\''+u.id+'\')">Delete</button></td></tr>');
-  if(!us||!us.length)h+='<tr><td colspan=5>No users.</td></tr>';app.innerHTML=h+'</tbody></table></div></div>';}
+  const su=isSuper();
+  let h='<div class="wrap"><div class="crumb"><button class="linkbtn" onclick="backOrgs()">&#8592; Back to list</button></div><h1>'+esc(name)+'</h1><p class="sub">'+(su?"Manage user accounts.":"User accounts (view-only).")+'</p><div class="card"><table><thead><tr><th>SE Name</th><th>Email</th><th>Contact</th><th>Status</th>'+(su?'<th>Actions</th>':'')+'</tr></thead><tbody>';
+  (us||[]).forEach(u=>{h+='<tr><td>'+esc(u.full_name)+'</td><td>'+esc(u.email)+'</td><td>'+esc(u.contact)+'</td><td>'+pill(u.status)+'</td>';
+    if(su){h+='<td>'+(u.status==='blocked'?'<button class="ghost small" onclick="setStatus(\''+u.id+'\',\'active\')">Unblock</button>':'<button class="ghost small" onclick="setStatus(\''+u.id+'\',\'blocked\')">Block</button>')+
+      ' <button class="ghost small" onclick="resetPw(\''+esc(u.email)+'\')">Send reset</button> <button class="danger small" onclick="delUser(\''+u.id+'\')">Delete</button></td>';}
+    h+='</tr>';});
+  if(!us||!us.length)h+='<tr><td colspan='+(su?5:4)+'>No users.</td></tr>';app.innerHTML=h+'</tbody></table></div></div>';}
 function backOrgs(){adminOrg=null;renderAdmin();}
 async function setStatus(id,s){await SB.from('profiles').update({status:s}).eq('id',id);renderAdmin();}
 async function resetPw(email){const {error}=await SB.auth.resetPasswordForEmail(email,{redirectTo:location.href.split('#')[0]});alert(error?("Error: "+error.message):"Password-reset email sent to "+email+".");}
@@ -282,9 +295,48 @@ function renderDashTable(){const rows=currentDashRows();
 function exportDash(){exportRows(JSON.stringify(currentDashRows()));}
 
 let adminGuideProd="";
-async function adminGuide(){app.innerHTML='<div class="wrap"><h1>Best Practice Guide (editor)</h1><p class="note">Loading…</p></div>';
-  const {data}=await SB.from('best_practice_guide').select('*').order('product');window._guide=data||[];adminGuideProd=(data&&data[0]&&data[0].product)||"";
+async function adminGuide(){
+  const {data}=await SB.from('best_practice_guide').select('*').order('product');window._guide=data||[];
+  if(!isSuper()){ // scoped admins get read-only guide
+    app.innerHTML='<div class="wrap"><h1>Veeam Best Practice Guide</h1><div id="gt"></div><div id="gc" class="card"></div></div>';
+    guideView((data&&data[0]&&data[0].product)||""); return; }
+  adminGuideProd=(data&&data[0]&&data[0].product)||"";
   app.innerHTML='<div class="wrap"><h1>Best Practice Guide (editor)</h1><p class="sub">Edit product-wise guides. Each line is <b>Topic | Recommendation</b>.</p><div id="gt"></div><div id="ge" class="card"></div></div>';guideEdit(adminGuideProd);}
+
+/* ---------- Team & Roles (super admin only) ---------- */
+async function adminTeam(){app.innerHTML='<div class="wrap"><h1>Team &amp; Roles</h1><p class="note">Loading…</p></div>';
+  const {data:profs}=await SB.from('profiles').select('*').order('role',{ascending:false}).order('full_name');
+  let h='<div class="wrap"><h1>Team &amp; Roles</h1><p class="sub">Promote teammates and set what each admin can see. Super admin = full control; Admin = only assigned organizations; User = own activity only.</p><div class="card"><table><thead><tr><th>Name</th><th>Email</th><th>Relation</th><th>Role</th><th>Access</th><th></th></tr></thead><tbody>';
+  (profs||[]).forEach(u=>{const scopeTxt=u.role==='super_admin'?'All (super)':(u.role==='admin'?(u.scope_all?'All organizations':((u.scope_orgs||[]).length?((u.scope_orgs||[]).join(", ")):'None set')):'—');
+    h+='<tr><td>'+esc(u.full_name)+'</td><td>'+esc(u.email)+'</td><td>'+esc(u.relation||'')+'</td><td>'+pill(u.role)+'</td><td>'+esc(scopeTxt)+'</td><td><button class="ghost small" onclick="manageAccess(\''+u.id+'\')">Manage access</button></td></tr>';});
+  if(!profs||!profs.length)h+='<tr><td colspan=6>No accounts.</td></tr>';
+  app.innerHTML=h+'</tbody></table></div></div>';}
+async function manageAccess(id){
+  const [{data:u},{data:orgs}]=await Promise.all([SB.from('profiles').select('*').eq('id',id).maybeSingle(),SB.from('organizations').select('*').order('relation').order('name')]);
+  if(!u)return;
+  const scope=u.scope_orgs||[];
+  let boxes=(orgs||[]).map(o=>'<label class="chk" style="font-size:13px"><input type="checkbox" class="scopebox" value="'+esc(o.name)+'" '+(scope.indexOf(o.name)>=0?'checked':'')+'> '+esc(o.name)+' <span class="note">('+esc(o.relation)+')</span></label>').join("");
+  app.innerHTML=`<div class="wrap"><div class="crumb"><button class="linkbtn" onclick="adminGo('team')">&#8592; Back to Team &amp; Roles</button></div>
+    <h1>Manage access — ${esc(u.full_name||u.email)}</h1><p class="sub">${esc(u.email)}</p><div id="m" class="msg"></div>
+    <div class="card"><label>Role</label>
+      <select id="mrole" onchange="mroleChange()"><option value="user"${u.role==='user'?' selected':''}>User (own activity only)</option><option value="admin"${u.role==='admin'?' selected':''}>Admin (scoped)</option><option value="super_admin"${u.role==='super_admin'?' selected':''}>Super admin (full control)</option></select>
+      <div id="scopewrap" style="margin-top:14px">
+        <label><input type="checkbox" id="scopeall" ${u.scope_all?'checked':''} onchange="mroleChange()" style="width:auto"> Access to <b>all organizations</b></label>
+        <div id="orgboxes" style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:4px">${boxes}</div>
+      </div>
+      <div style="margin-top:14px"><button class="primary" onclick="saveAccess('${u.id}')">Save access</button></div>
+    </div></div>`;
+  mroleChange();
+}
+function mroleChange(){const role=gv("mrole");const sw=document.getElementById("scopewrap");const all=document.getElementById("scopeall");const ob=document.getElementById("orgboxes");
+  sw.style.display=(role==='admin')?'':'none';
+  if(ob)ob.style.display=(role==='admin'&&all&&!all.checked)?'grid':'none';}
+async function saveAccess(id){const role=gv("mrole");const all=document.getElementById("scopeall")?document.getElementById("scopeall").checked:false;
+  const orgs=[...document.querySelectorAll('.scopebox:checked')].map(c=>c.value);
+  const patch={role:role,scope_all:(role==='admin'?all:false),scope_orgs:(role==='admin'&&!all?orgs:[])};
+  const {error}=await SB.from('profiles').update(patch).eq('id',id);
+  if(error){msg("m","Save failed: "+error.message,false);return;}
+  adminGo('team');}
 function guideEdit(prod){adminGuideProd=prod;const gs=window._guide||[];
   document.getElementById("gt").innerHTML='<div class="subtabs">'+gs.map(g=>`<button class="${g.product===prod?'active':''}" onclick="guideEdit('${esc(g.product)}')">${esc(g.product)}</button>`).join("")+'</div>';
   const g=gs.find(x=>x.product===prod);const rows=(g&&g.rows)||[];const txt=rows.map(r=>r[0]+" | "+r[1]).join("\n");
