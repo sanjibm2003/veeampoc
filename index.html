@@ -68,6 +68,7 @@ const SB = (window.SUPABASE_URL && window.SUPABASE_ANON_KEY && window.supabase)
 const app=document.getElementById("app");
 let me=null, charts=[];
 function esc(s){return String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
+function linkify(s){return esc(s).replace(/(https?:\/\/[^\s]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');}
 function pill(s){const m={active:"p-active",pending:"p-pending",blocked:"p-blocked",Final:"p-final",Draft:"p-draft","Completed":"p-final","On-going":"p-draft",POC:"p-poc",Demo:"p-demo",super_admin:"p-poc",admin:"p-demo",user:"p-pending"};return '<span class="pill '+(m[s]||'')+'">'+esc(s)+'</span>';}
 function gv(id){const e=document.getElementById(id);return e?e.value:"";}
 function val(id){return (document.getElementById(id).value||"").trim();}
@@ -145,7 +146,7 @@ function renderUserMenu(){clearCharts();document.getElementById("adminTabs").cla
   app.innerHTML=`<div class="wrap">
     <div class="hero"><div class="eyebrow">Veeam POC Portal</div><h1>Welcome, ${esc(me.full_name||me.email)}</h1><p>${esc(me.org_name||"")} · ${esc(me.relation||"")}</p></div>
     <div class="menu">
-      <a class="tile" href="poc.html" target="_blank"><div class="ic">&#9998;</div><h3>POC Template</h3><p>Open the POC form to capture engagement, features, sizing and sign-off.</p></a>
+      <a class="tile" href="poc.html" target="_blank"><div class="ic">&#9998;</div><h3>POC Activity</h3><p>Open the POC form to capture engagement, features, sizing and sign-off.</p></a>
       <a class="tile" href="demo_activity.html" target="_blank"><div class="ic">&#127916;</div><h3>Demo Activity</h3><p>Log a product demo — lighter than a POC, no customer sign-off.</p></a>
       <div class="tile" onclick="userReport()"><div class="ic">&#128202;</div><h3>Report &amp; Dashboard</h3><p>Charts and a list of your own POC &amp; Demo activities.</p></div>
       <div class="tile" onclick="userGuide()"><div class="ic">&#128214;</div><h3>Veeam Best Practice Guide</h3><p>Product-wise best-practice guides maintained by Veeam.</p></div>
@@ -198,7 +199,7 @@ async function userGuide(){clearCharts();app.innerHTML='<div class="wrap"><butto
   const {data}=await SB.from('best_practice_guide').select('*').order('product'); window._guide=data||[]; guideView((data&&data[0]&&data[0].product)||"");}
 function guideView(prod){const gs=window._guide||[];document.getElementById("gt").innerHTML='<div class="subtabs">'+gs.map(g=>`<button class="${g.product===prod?'active':''}" onclick="guideView('${esc(g.product)}')">${esc(g.product)}</button>`).join("")+'</div>';
   const g=gs.find(x=>x.product===prod);const rows=(g&&g.rows)||[];let h='<h2 style="margin-top:0">'+esc(prod)+'</h2><table><thead><tr><th style="width:30%">Topic</th><th>Recommendation</th></tr></thead><tbody>';
-  rows.forEach(r=>h+='<tr><td><b>'+esc(r[0])+'</b></td><td>'+esc(r[1])+'</td></tr>');if(!rows.length)h+='<tr><td colspan=2>No content yet.</td></tr>';document.getElementById("gc").innerHTML=h+'</tbody></table>';}
+  rows.forEach(r=>h+='<tr><td><b>'+esc(r[0])+'</b></td><td>'+linkify(r[1])+'</td></tr>');if(!rows.length)h+='<tr><td colspan=2>No content yet.</td></tr>';document.getElementById("gc").innerHTML=h+'</tbody></table>';}
 
 /* ---------- ADMIN portal ---------- */
 let adminTab="dashboard",adminOrg=null,dashF={relation:"",type:"",product:"",org:""},allActs=[];
