@@ -207,16 +207,21 @@ function isSuper(){return me&&me.role==='super_admin';}
 function inScope(orgName){ if(isSuper())return true; if(me&&me.scope_all)return true; return me&&Array.isArray(me.scope_orgs)&&me.scope_orgs.indexOf(orgName)>=0; }
 function renderAdmin(){clearCharts();const t=document.getElementById("adminTabs");t.classList.remove("hide");
   let def;
-  if(isSuper()){ def=[["approvals","Approvals"],["distributors","Distributors"],["partners","Partners"],["dashboard","Activity Dashboard"],["team","Team & Roles"],["guide","Guide"]]; }
-  else { def=[["dashboard","Activity Dashboard"],["distributors","Distributors"],["partners","Partners"],["guide","Guide"]]; }
+  if(isSuper()){ def=[["approvals","Approvals"],["distributors","Distributors"],["partners","Partners"],["dashboard","Activity Dashboard"],["poc","POC Activity"],["demo","Demo Activity"],["team","Team & Roles"],["guide","Guide"]]; }
+  else { def=[["dashboard","Activity Dashboard"],["poc","POC Activity"],["demo","Demo Activity"],["distributors","Distributors"],["partners","Partners"],["guide","Guide"]]; }
   if(!def.find(d=>d[0]===adminTab)) adminTab=def[0][0];
   t.innerHTML=def.map(([k,l])=>`<button class="${adminTab===k?'active':''}" onclick="adminGo('${k}')">${l}</button>`).join("");
   if(adminTab==="approvals")adminApprovals();
   else if(adminTab==="distributors")adminOrgs("Distributor");
   else if(adminTab==="partners")adminOrgs("Partner");
   else if(adminTab==="dashboard")adminDashboard();
+  else if(adminTab==="poc")adminActivity("POC");
+  else if(adminTab==="demo")adminActivity("Demo");
   else if(adminTab==="team")adminTeam();
   else adminGuide();}
+function adminActivity(kind){clearCharts();const src=kind==="POC"?"poc.html":"demo_activity.html";const title=kind==="POC"?"POC Activity":"Demo Activity";
+  const note=kind==="POC"?"Fill and submit a POC — the same form your team members use. Your submission is logged under your own account.":"Log a product demo — the same lighter form your team members use.";
+  app.innerHTML=`<div class="wrap"><h1>${title}</h1><p class="sub">${note} <a href="${src}" target="_blank">Open in a new tab &#8599;</a></p><iframe src="${src}" style="width:100%;height:76vh;border:1px solid var(--border);border-radius:12px;background:#fff"></iframe></div>`;}
 function adminGo(k){adminTab=k;adminOrg=null;renderAdmin();}
 async function adminApprovals(){app.innerHTML='<div class="wrap"><h1>Registrations</h1><p class="note">Loading…</p></div>';
   const {data}=await SB.from('profiles').select('*').eq('status','pending').order('created_at');
