@@ -278,7 +278,7 @@ async function sbSave(status){
   if(!s||!s.user){show("Please sign in to the portal first, then open the POC template from there.",false);return false;}
   const d=collect();
   const row={user_id:s.user.id,user_email:s.user.email,org_name:(s.prof&&s.prof.org_name)||"",relation:(s.prof&&s.prof.relation)||"",
-    customer_name:d["Customer / Account name"]||"",veeam_am:d["Veeam AM Name"]||"",products:sbProducts(d),submission_status:status,outcome:d["Overall outcome"]||"",bom:sbBOM(d),payload:d};
+    customer_name:d["Customer / Account name"]||"",products:sbProducts(d),submission_status:status,outcome:d["Overall outcome"]||"",bom:sbBOM(d),payload:d};
   const id=localStorage.getItem(DRAFT_ID_KEY);let res;
   if(id){res=await SB.from('poc_submissions').update(row).eq('id',id).select().maybeSingle();}
   else {res=await SB.from('poc_submissions').insert(row).select().maybeSingle();}

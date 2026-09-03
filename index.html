@@ -159,8 +159,8 @@ async function fetchMyActivities(){
   return toActs(pocs||[],demos||[]);
 }
 function toActs(pocs,demos){
-  const p=pocs.map(x=>({type:"POC",relation:x.relation||"",org:x.org_name||"",engineer:(x.payload&&x.payload["Conducted by — Name"])||"",am:x.veeam_am||(x.payload&&x.payload["Veeam AM Name"])||"",email:x.user_email||"",customer:x.customer_name||"",products:x.products||[],bom:x.bom||"",stage:x.submission_status==="Final"?"Completed":"On-going",result:x.outcome||"",updated:(x.updated_at||x.created_at||"").slice(0,10)}));
-  const d=demos.map(x=>({type:"Demo",relation:x.relation||"",org:x.org_name||"",engineer:(x.payload&&x.payload["Name of person conducting demo"])||"",am:x.veeam_am||(x.payload&&x.payload["Veeam AM Name"])||"",email:x.user_email||"",customer:x.customer_name||"",products:x.products||[],bom:"",stage:"Completed",result:x.outcome||"",updated:(x.created_at||"").slice(0,10)}));
+  const p=pocs.map(x=>({type:"POC",relation:x.relation||"",org:x.org_name||"",engineer:(x.payload&&x.payload["Conducted by — Name"])||"",email:x.user_email||"",customer:x.customer_name||"",products:x.products||[],bom:x.bom||"",stage:x.submission_status==="Final"?"Completed":"On-going",result:x.outcome||"",updated:(x.updated_at||x.created_at||"").slice(0,10)}));
+  const d=demos.map(x=>({type:"Demo",relation:x.relation||"",org:x.org_name||"",engineer:(x.payload&&x.payload["Name of person conducting demo"])||"",email:x.user_email||"",customer:x.customer_name||"",products:x.products||[],bom:"",stage:"Completed",result:x.outcome||"",updated:(x.created_at||"").slice(0,10)}));
   return p.concat(d);
 }
 let userF={type:"",product:""}, myActs=[];
@@ -191,9 +191,9 @@ function clearUserF(){userF={type:"",product:""};["fUType","fUProd"].forEach(id=
 function currentUserRows(){return myActs.filter(a=>(!userF.type||a.type===userF.type)&&(!userF.product||(a.products||[]).includes(userF.product)));}
 function renderUserTable(){const rows=currentUserRows();
   document.getElementById("uChips").innerHTML=chips({Type:userF.type,Product:userF.product},"clearUserF")+'<div class="note" style="margin-bottom:6px">'+rows.length+' activity record(s)</div>';
-  let h='<table><thead><tr><th>Type</th><th>Customer</th><th>Veeam AM</th><th>Products</th><th>Tentative BOM</th><th>Stage</th><th>Result</th><th>Updated</th></tr></thead><tbody>';
-  rows.forEach(x=>h+='<tr><td>'+pill(x.type)+'</td><td>'+esc(x.customer)+'</td><td>'+esc(x.am||'—')+'</td><td>'+esc((x.products||[]).join(", "))+'</td><td>'+esc(x.bom||'—')+'</td><td>'+pill(x.stage)+'</td><td>'+esc(x.result||'—')+'</td><td>'+esc(x.updated)+'</td></tr>');
-  if(!rows.length)h+='<tr><td colspan=8>No activities.</td></tr>';document.getElementById("uTable").innerHTML=h+'</tbody></table>';}
+  let h='<table><thead><tr><th>Type</th><th>Customer</th><th>Products</th><th>Tentative BOM</th><th>Stage</th><th>Result</th><th>Updated</th></tr></thead><tbody>';
+  rows.forEach(x=>h+='<tr><td>'+pill(x.type)+'</td><td>'+esc(x.customer)+'</td><td>'+esc((x.products||[]).join(", "))+'</td><td>'+esc(x.bom||'—')+'</td><td>'+pill(x.stage)+'</td><td>'+esc(x.result||'—')+'</td><td>'+esc(x.updated)+'</td></tr>');
+  if(!rows.length)h+='<tr><td colspan=7>No activities.</td></tr>';document.getElementById("uTable").innerHTML=h+'</tbody></table>';}
 
 async function userGuide(){clearCharts();app.innerHTML='<div class="wrap"><button class="ghost small" onclick="renderUserMenu()">&#8592; Back</button><h2>Veeam Best Practice Guide</h2><div id="gt"></div><div id="gc" class="card">Loading…</div></div>';
   const {data}=await SB.from('best_practice_guide').select('*').order('product'); window._guide=data||[]; guideView((data&&data[0]&&data[0].product)||"");}
@@ -202,7 +202,7 @@ function guideView(prod){const gs=window._guide||[];document.getElementById("gt"
   rows.forEach(r=>h+='<tr><td><b>'+esc(r[0])+'</b></td><td>'+linkify(r[1])+'</td></tr>');if(!rows.length)h+='<tr><td colspan=2>No content yet.</td></tr>';document.getElementById("gc").innerHTML=h+'</tbody></table>';}
 
 /* ---------- ADMIN portal ---------- */
-let adminTab="dashboard",adminOrg=null,dashF={relation:"",type:"",product:"",org:"",am:""},allActs=[];
+let adminTab="dashboard",adminOrg=null,dashF={relation:"",type:"",product:"",org:""},allActs=[];
 function isSuper(){return me&&me.role==='super_admin';}
 function inScope(orgName){ if(isSuper())return true; if(me&&me.scope_all)return true; return me&&Array.isArray(me.scope_orgs)&&me.scope_orgs.indexOf(orgName)>=0; }
 function renderAdmin(){clearCharts();const t=document.getElementById("adminTabs");t.classList.remove("hide");
@@ -281,7 +281,7 @@ async function setStatus(id,s){await SB.from('profiles').update({status:s}).eq('
 async function resetPw(email){const {error}=await SB.auth.resetPasswordForEmail(email,{redirectTo:location.href.split('#')[0]});alert(error?("Error: "+error.message):"Password-reset email sent to "+email+".");}
 async function delUser(id){if(!confirm("Delete this user's profile & their activities? (Their login is disabled; full auth deletion is done from the Supabase dashboard.)"))return;await SB.from('profiles').delete().eq('id',id);renderAdmin();}
 
-async function adminDashboard(){clearCharts();dashF={relation:"",type:"",product:"",org:"",am:""};
+async function adminDashboard(){clearCharts();dashF={relation:"",type:"",product:"",org:""};
   app.innerHTML='<div class="wrap"><h1>Activity Dashboard</h1><p class="note">Loading…</p></div>';
   const [{data:pocs},{data:demos}]=await Promise.all([SB.from('poc_submissions').select('*'),SB.from('demo_activities').select('*')]);
   allActs=toActs(pocs||[],demos||[]);
@@ -289,40 +289,35 @@ async function adminDashboard(){clearCharts();dashF={relation:"",type:"",product
   const dist=acts.filter(a=>a.relation==="Distributor"),part=acts.filter(a=>a.relation==="Partner");
   const cT=(arr,t)=>arr.filter(x=>x.type===t).length;
   const prodOpts=[...new Set(acts.flatMap(a=>a.products))].map(p=>'<option>'+esc(p)+'</option>').join("");
-  const amOpts=[...new Set(acts.map(a=>a.am).filter(Boolean))].sort().map(p=>'<option>'+esc(p)+'</option>').join("");
   app.innerHTML=`<div class="wrap"><h1>Activity Dashboard</h1><p class="sub">All POC &amp; Demo activity, with Distributor vs Partner segregation. Click any chart to filter.</p>
     <div class="kpis"><div class="kpi"><div class="n">${acts.length}</div><div class="l">Total activities</div></div>
       <div class="kpi"><div class="n">${nPOC}</div><div class="l">POCs</div></div><div class="kpi"><div class="n">${nDemo}</div><div class="l">Demos</div></div>
-      <div class="kpi"><div class="n">${new Set(acts.map(a=>a.am).filter(Boolean)).size}</div><div class="l">Veeam AMs</div></div></div>
+      <div class="kpi"><div class="n">${new Set(acts.map(a=>a.org)).size}</div><div class="l">Organizations</div></div></div>
     <div class="kpis"><div class="kpi dist"><div class="n">${dist.length}</div><div class="l">Distributor activities &nbsp;(${cT(dist,"POC")} POC / ${cT(dist,"Demo")} Demo)</div></div>
       <div class="kpi part"><div class="n">${part.length}</div><div class="l">Partner activities &nbsp;(${cT(part,"POC")} POC / ${cT(part,"Demo")} Demo)</div></div></div>
     <div class="charts"><div class="chartbox"><h3>Distributor vs Partner (by type)</h3><canvas id="cRel"></canvas></div><div class="chartbox"><h3>Activity type</h3><canvas id="cType"></canvas></div></div>
-    <div class="charts"><div class="chartbox"><h3>Activities by product</h3><canvas id="cProd"></canvas></div><div class="chartbox"><h3>Activities by Veeam AM</h3><canvas id="cAM"></canvas></div></div>
-    <div class="charts"><div class="chartbox"><h3>Activities by organization</h3><canvas id="cOrg"></canvas></div></div>
+    <div class="charts"><div class="chartbox"><h3>Activities by product</h3><canvas id="cProd"></canvas></div><div class="chartbox"><h3>Activities by organization</h3><canvas id="cOrg"></canvas></div></div>
     <div class="card"><div class="toolbar">
       <label style="margin:0">Category</label><select id="fRel" style="width:auto" onchange="onDashCtl()"><option value="">All</option><option>Distributor</option><option>Partner</option></select>
       <label style="margin:0">Type</label><select id="fType" style="width:auto" onchange="onDashCtl()"><option value="">All</option><option>POC</option><option>Demo</option></select>
       <label style="margin:0">Product</label><select id="fProd" style="width:auto" onchange="onDashCtl()"><option value="">All</option>${prodOpts}</select>
-      <label style="margin:0">Veeam AM</label><select id="fAM" style="width:auto" onchange="onDashCtl()"><option value="">All</option>${amOpts}</select>
       <button class="ghost small" onclick="clearDash()">Clear filters</button><button class="ghost small" onclick="exportDash()">Export CSV</button></div>
       <div id="dashChips"></div><div id="dashTable"></div></div></div>`;
   if(window.Chart){
     stackedBar("cRel",["Distributor","Partner"],[{label:"POC",data:[cT(dist,"POC"),cT(part,"POC")],color:"#01B0FE"},{label:"Demo",data:[cT(dist,"Demo"),cT(part,"Demo")],color:"#00D15F"}],(l,ds)=>setDash({relation:l,type:ds}));
     doughnut("cType",["POC","Demo"],[nPOC,nDemo],["#01B0FE","#00D15F"],(l)=>setDash({type:l}));
-    barByProducts("cProd",acts,(l)=>setDash({product:l}));
-    barByKey("cAM",acts.filter(a=>a.am),"am",(l)=>setDash({am:l}));
-    barByKey("cOrg",acts,"org",(l)=>setDash({org:l}));}
+    barByProducts("cProd",acts,(l)=>setDash({product:l}));barByKey("cOrg",acts,"org",(l)=>setDash({org:l}));}
   renderDashTable();
 }
-function onDashCtl(){dashF.relation=gv("fRel");dashF.type=gv("fType");dashF.product=gv("fProd");dashF.am=gv("fAM");dashF.org="";renderDashTable();}
-function setDash(p){Object.assign(dashF,p);if(document.getElementById("fRel"))document.getElementById("fRel").value=dashF.relation;if(document.getElementById("fType"))document.getElementById("fType").value=dashF.type;if(document.getElementById("fProd"))document.getElementById("fProd").value=dashF.product;if(document.getElementById("fAM"))document.getElementById("fAM").value=dashF.am;renderDashTable();const t=document.getElementById("dashTable");if(t)t.scrollIntoView({behavior:"smooth",block:"nearest"});}
-function clearDash(){dashF={relation:"",type:"",product:"",org:"",am:""};["fRel","fType","fProd","fAM"].forEach(id=>{if(document.getElementById(id))document.getElementById(id).value="";});renderDashTable();}
-function currentDashRows(){return allActs.filter(a=>(!dashF.relation||a.relation===dashF.relation)&&(!dashF.type||a.type===dashF.type)&&(!dashF.product||(a.products||[]).includes(dashF.product))&&(!dashF.org||a.org===dashF.org)&&(!dashF.am||a.am===dashF.am));}
+function onDashCtl(){dashF.relation=gv("fRel");dashF.type=gv("fType");dashF.product=gv("fProd");dashF.org="";renderDashTable();}
+function setDash(p){Object.assign(dashF,p);if(document.getElementById("fRel"))document.getElementById("fRel").value=dashF.relation;if(document.getElementById("fType"))document.getElementById("fType").value=dashF.type;if(document.getElementById("fProd"))document.getElementById("fProd").value=dashF.product;renderDashTable();const t=document.getElementById("dashTable");if(t)t.scrollIntoView({behavior:"smooth",block:"nearest"});}
+function clearDash(){dashF={relation:"",type:"",product:"",org:""};["fRel","fType","fProd"].forEach(id=>{if(document.getElementById(id))document.getElementById(id).value="";});renderDashTable();}
+function currentDashRows(){return allActs.filter(a=>(!dashF.relation||a.relation===dashF.relation)&&(!dashF.type||a.type===dashF.type)&&(!dashF.product||(a.products||[]).includes(dashF.product))&&(!dashF.org||a.org===dashF.org));}
 function renderDashTable(){const rows=currentDashRows();
-  document.getElementById("dashChips").innerHTML=chips({Category:dashF.relation,Type:dashF.type,Product:dashF.product,Organization:dashF.org,"Veeam AM":dashF.am},"clearDash")+'<div class="note" style="margin-bottom:6px">'+rows.length+' activity record(s)</div>';
-  let h='<table><thead><tr><th>Type</th><th>Relation</th><th>Organization</th><th>Engineer</th><th>Veeam AM</th><th>Customer</th><th>Products</th><th>Tentative BOM</th><th>Stage</th><th>Result</th><th>Updated</th></tr></thead><tbody>';
-  rows.forEach(x=>h+='<tr><td>'+pill(x.type)+'</td><td>'+esc(x.relation)+'</td><td>'+esc(x.org)+'</td><td>'+esc(x.engineer)+'</td><td>'+esc(x.am||'—')+'</td><td>'+esc(x.customer)+'</td><td>'+esc((x.products||[]).join(", "))+'</td><td>'+esc(x.bom||'—')+'</td><td>'+pill(x.stage)+'</td><td>'+esc(x.result||'—')+'</td><td>'+esc(x.updated)+'</td></tr>');
-  if(!rows.length)h+='<tr><td colspan=11>No records.</td></tr>';document.getElementById("dashTable").innerHTML=h+'</tbody></table>';}
+  document.getElementById("dashChips").innerHTML=chips({Category:dashF.relation,Type:dashF.type,Product:dashF.product,Organization:dashF.org},"clearDash")+'<div class="note" style="margin-bottom:6px">'+rows.length+' activity record(s)</div>';
+  let h='<table><thead><tr><th>Type</th><th>Relation</th><th>Organization</th><th>Engineer</th><th>Customer</th><th>Products</th><th>Tentative BOM</th><th>Stage</th><th>Result</th><th>Updated</th></tr></thead><tbody>';
+  rows.forEach(x=>h+='<tr><td>'+pill(x.type)+'</td><td>'+esc(x.relation)+'</td><td>'+esc(x.org)+'</td><td>'+esc(x.engineer)+'</td><td>'+esc(x.customer)+'</td><td>'+esc((x.products||[]).join(", "))+'</td><td>'+esc(x.bom||'—')+'</td><td>'+pill(x.stage)+'</td><td>'+esc(x.result||'—')+'</td><td>'+esc(x.updated)+'</td></tr>');
+  if(!rows.length)h+='<tr><td colspan=10>No records.</td></tr>';document.getElementById("dashTable").innerHTML=h+'</tbody></table>';}
 function exportDash(){exportRows(JSON.stringify(currentDashRows()));}
 
 let adminGuideProd="";

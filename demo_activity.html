@@ -143,7 +143,7 @@ async function sbSaveDemo(){
   const {data:prof}=await SB.from('profiles').select('*').eq('id',user.id).maybeSingle();
   const d=collect();const products=[];
   Object.keys(d).forEach(k=>{if(k.indexOf("Demo in scope: ")===0&&d[k]==="Yes")products.push(k.replace("Demo in scope: ",""));});
-  const row={user_id:user.id,user_email:user.email,org_name:(prof&&prof.org_name)||"",relation:(prof&&prof.relation)||"",customer_name:d["Customer / Account name"]||"",veeam_am:d["Veeam AM Name"]||"",products:products,outcome:d["Overall demo outcome"]||"",stage:"Completed",payload:d};
+  const row={user_id:user.id,user_email:user.email,org_name:(prof&&prof.org_name)||"",relation:(prof&&prof.relation)||"",customer_name:d["Customer / Account name"]||"",products:products,outcome:d["Overall demo outcome"]||"",stage:"Completed",payload:d};
   const res=await SB.from('demo_activities').insert(row);
   if(res.error){show("Save failed: "+res.error.message,false);return false;}
   return true;
